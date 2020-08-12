@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS 'users' (
+    'id' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    'username' TEXT NOT NULL,
+    'hash' TEXT NOT NULL,
+    'cash' NUMERIC NOT NULL DEFAULT 10000.00
+);
+
+layout.html:
+    title
+    navbar: Quote|Buy|Sell|History|logout if logged_in else register|login
+    mainblock
+    footer
+
+
