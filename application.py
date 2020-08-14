@@ -1,6 +1,7 @@
 import os
 
-from cs50 import SQL
+import sqlite3
+
 from flask import Flask, flash, jsonify, redirect, render_template, request, session
 from flask_session import Session
 from tempfile import mkdtemp
@@ -32,8 +33,6 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-# Configure CS50 Library to use SQLite database
-db = SQL("sqlite:///finance.db")
 
 # Make sure API key is set
 if not os.environ.get("API_KEY"):
@@ -84,16 +83,27 @@ def login():
         elif not request.form.get("password"):
             return apology("must provide password", 403)
 
-        # Query database for username
-        rows = db.execute("SELECT * FROM users WHERE username = :username",
-                          username=request.form.get("username"))
+        # Connect to the database
+        with sqlite3.connect('finance.db') as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+
+            # Query database for username
+            rows = cursor.execute(
+                "SELECT * FROM users WHERE username = :username",
+                {'username': request.form.get("username")}
+            )
+
+            # Get the first row
+            row = rows.fetchone()
+
 
         # Ensure username exists and password is correct
-        if len(rows) != 1 or not check_password_hash(rows[0]["hash"], request.form.get("password")):
+        if row == None or not check_password_hash(row["hash"], request.form.get("password")):
             return apology("invalid username and/or password", 403)
 
         # Remember which user has logged in
-        session["user_id"] = rows[0]["id"]
+        session["user_id"] = row["id"]
 
         # Redirect user to home page
         return redirect("/")
@@ -128,37 +138,45 @@ def quote():
 def register():
     if request.method == 'GET':
         return render_template('register.html')
+
     else:
         print("|"*50)
 
+        # Ensure username exists
         if not request.form.get('username'):
             return apology('Username can\'t be empty', 902)
 
+        # Ensure password & confirmation exist
         if not request.form.get('password') or not request.form.get('confirmation'):
             return apology('a password can\'t be empty', 902)
 
+        # Ensure password matches confirmation
         if request.form.get('password') != request.form.get('confirmation'):
             return apology("PASSWORDS MUST MATCH!!", 901)
 
-        # Check if the username is already in the database
-        result = db.execute("SELECT id FROM users WHERE username=:username",
-            username = request.form.get('username')
-        )
+        # Connect to the database
+        with sqlite3.connect('finance.db') as conn:
+            cursor = conn.cursor()
 
-        # If it does
-        if len(result) != 0:
-            return apology("username already used", 903)
+            # Check if the username is already in the database
+            result = cursor.execute(
+                "SELECT id FROM users WHERE username=?",
+                (request.form.get('username'),)
+            )
+            # .. if it does
+            if result.fetchone() != None:
+                return apology("username already used", 903)
 
-        print (request.form.get('username'), generate_password_hash(request.form.get('password')), sep='|')
-
-        result = db.execute("INSERT INTO users (username, hash) VALUES (:username, :hash)",
-            username = request.form.get('username'),
-            hash = generate_password_hash(request.form.get('password'))
-        )
+            # Insert the user
+            result = cursor.execute(
+                "INSERT INTO users (username, hash) VALUES (?, ?)",
+                (
+                    request.form.get('username'),
+                    generate_password_hash(request.form.get('password'))
+                )
+            )
 
         print(result)
-
-        session['user-id'] = request.form.get('username')
 
         return redirect("/")
 
