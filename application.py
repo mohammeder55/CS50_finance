@@ -141,7 +141,7 @@ def quote():
 
     if request.method == 'GET':
         # Serve the page
-        pass
+        return render_template('quote.html')
 
     else:
         # Look up the price
