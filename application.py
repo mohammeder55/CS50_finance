@@ -52,6 +52,14 @@ def index():
 @login_required
 def buy():
     """Buy shares of stock"""
+
+    # Get the stock's price
+    # Check if the user can afford it
+
+    # Update stocks table
+    # Update transactions table
+    # Update User's cash
+
     return apology("TODO")
 
 
@@ -130,6 +138,15 @@ def logout():
 @login_required
 def quote():
     """Get stock quote."""
+
+    if request.method == 'GET':
+        # Serve the page
+        pass
+
+    else:
+        # Look up the price
+        pass
+
     return apology("TODO")
 
 
@@ -188,6 +205,15 @@ def register():
 @login_required
 def sell():
     """Sell shares of stock"""
+
+    # Query database for owned stocks of that symbol
+
+    # Ensure the user don't own less than what he's selling
+
+    # Update stocks table
+    # Update transactions table
+    # Update user's cash
+
     return apology("TODO")
 
 
