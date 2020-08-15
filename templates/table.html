@@ -1,0 +1,29 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{% block main %}
+    <table class="table table-bordered">
+
+        <thead>
+            <tr>
+                {% for head in header %}
+                    <th> {{ head }} </th>
+                {% endfor %}
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                {% for head in header %}
+                    <td> {{ row[head] }} </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+{% endblock %}

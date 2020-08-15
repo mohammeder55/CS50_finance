@@ -44,7 +44,22 @@ if not os.environ.get("API_KEY"):
 @login_required
 def index():
     """Show portfolio of stocks"""
-    return apology("TODO")
+
+    # Connect to the database
+    with sqlite3.connect('finance.db') as conn:
+        conn.row_factory = sqlite3.Row
+
+        # TODO: Change the statement
+        result = conn.execute(
+            "SELECT id, cash FROM users"
+        )
+
+    return render_template(
+        'table.html',
+        rows = result,
+        header = ['id', 'cash'],
+        title = 'Home'
+    )
 
 
 # Let's the user buy stocks
