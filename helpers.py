@@ -5,6 +5,7 @@ import urllib.parse
 from flask import redirect, render_template, request, session
 from functools import wraps
 
+import time
 
 def apology(message, code=400):
     """Render message as an apology to user."""
@@ -61,3 +62,25 @@ def lookup(symbol):
 def usd(value):
     """Format value as USD."""
     return f"${value:,.2f}"
+
+days = [
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
+    'Sun'
+]
+
+def format_time(t):
+    t = time.localtime(t)
+
+    return "%02i:%02i, %s %02i/%02i/%i" % (
+        t.tm_hour,
+        t.tm_min,
+        days[t.tm_wday],
+        t.tm_mday,
+        t.tm_mon,
+        t.tm_year
+    )

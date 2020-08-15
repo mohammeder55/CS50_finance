@@ -8,7 +8,7 @@ from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import apology, login_required, lookup, usd
+from helpers import apology, login_required, lookup, usd, format_time
 
 # Configure application
 app = Flask(__name__)
@@ -55,7 +55,7 @@ def index():
         )
 
     return render_template(
-        'table.html',
+        'index_table.html',
         rows = result,
         header = ['id', 'cash'],
         title = 'Home'
@@ -80,10 +80,25 @@ def buy():
 
 # Shows the history of transactions
 @app.route("/history")
-@login_required
+# @login_required
 def history():
     """Show history of transactions"""
-    return apology("TODO")
+
+    rows = [
+        {'ID': 5, 'Symbol': 'AAPL', 'Shares': 5, 'Price': 50, 'Time': 1597530727.044325},
+        {'ID': 652, 'Symbol': 'AAPL', 'Shares': -4, 'Price': 51, 'Time': 1597501907.1454823}
+    ]
+
+    for row in rows:
+        row['Time'] = format_time(row["Time"])
+
+    return render_template(
+        'history_table.html',
+        # header = ['ID', 'Symbol', 'Shares', 'Amount', 'Time'],
+        header = ['ID', 'Symbol', 'Shares', 'Price', 'Time'],
+        rows = rows,
+        title = 'History'
+    )
 
 
 # Let's the user sign in

@@ -1,0 +1,45 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{% block main %}
+    <table class="table table-bordered">
+
+        <thead>
+            <tr>
+                {% for head in header %}
+                    <th> {{ head }} </th>
+                {% endfor %}
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                {% for head in header %}
+                    {% if head == 'Price' or head == 'Shares' %}
+                        {% if row['Shares'] > 0 %}
+                            <td class="green-text">
+                        {% else %}
+                            <td class="red-text">
+                        {% endif %}
+                    {% else %}
+                        <td>
+                    {% endif %}
+
+                        {% if head == 'Price' %}
+                            {{ row['Shares'] * row['Price']}}
+                        {% else %}
+                            {{ row[head] }}
+                        {% endif %}
+
+                    </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+{% endblock %}

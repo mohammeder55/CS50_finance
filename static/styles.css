@@ -45,3 +45,12 @@ main img
     /* constrain images on small screens */
     max-width: 100%;
 }
+
+/* colors for history table */
+.red-text {
+    color: #ea433b;
+}
+
+.green-text {
+    color: #2e944b;
+}
