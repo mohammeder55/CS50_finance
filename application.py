@@ -68,6 +68,13 @@ def index():
 def buy():
     """Buy shares of stock"""
 
+    if request.method == 'POST':
+        # TODO:
+        flash("TODO")
+        return render_template("buy.html")
+    else:
+        return render_template("buy.html")
+
     # Get the stock's price
     # Check if the user can afford it
 
@@ -75,12 +82,12 @@ def buy():
     # Update transactions table
     # Update User's cash
 
-    return apology("TODO")
+    # return apology("TODO")
 
 
 # Shows the history of transactions
 @app.route("/history")
-# @login_required
+@login_required
 def history():
     """Show history of transactions"""
 
