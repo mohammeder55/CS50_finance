@@ -232,6 +232,13 @@ def register():
 def sell():
     """Sell shares of stock"""
 
+    if request.method == 'POST':
+        flash("%s, %s" % (request.form.get('symbol'), request.form.get('count')))
+        return render_template('sell.html')
+
+    else:
+        return render_template('sell.html')
+
     # Query database for owned stocks of that symbol
 
     # Ensure the user don't own less than what he's selling
