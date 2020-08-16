@@ -171,15 +171,18 @@ def logout():
 def quote():
     """Get stock quote."""
 
-    if request.method == 'GET':
-        # Serve the page
-        return render_template('quote.html')
+    if request.method == 'POST':
+        qoute = lookup(request.form.get('symbol'))
 
-    else:
-        # TODO: Look up the price
-        pass
+        if qoute == None:
+            flash("Make sure the sumbol is valid and try later")
+            flash("Make sure the sumbol is valid and try later")
+        else:
+            flash(
+                '%s: %s' % (qoute['symbol'], usd(qoute['price']))
+            )
 
-    return apology("TODO")
+    return render_template('quote.html')
 
 
 @app.route("/register", methods=["GET", "POST"])
