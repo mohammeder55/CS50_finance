@@ -63,6 +63,7 @@ def usd(value):
     """Format value as USD."""
     return f"${value:,.2f}"
 
+# format_time dependency
 days = [
     'Mon',
     'Tue',
@@ -74,6 +75,11 @@ days = [
 ]
 
 def format_time(t):
+    """
+    Change the time from seconds since EPOC to the folloeing format:
+        hh:mm, wday dd/mm/yyyy
+    """
+
     t = time.localtime(t)
 
     return "%02i:%02i, %s %02i/%02i/%i" % (

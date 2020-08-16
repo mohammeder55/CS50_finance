@@ -39,7 +39,6 @@ if not os.environ.get("API_KEY"):
     raise RuntimeError("API_KEY not set")
 
 
-# Shows the profile of owned stocks
 @app.route("/")
 @login_required
 def index():
@@ -54,6 +53,7 @@ def index():
             "SELECT id, cash FROM users"
         )
 
+    # Make the template
     return render_template(
         'index_table.html',
         rows = result,
@@ -62,16 +62,16 @@ def index():
     )
 
 
-# Let's the user buy stocks
 @app.route("/buy", methods=["GET", "POST"])
 @login_required
 def buy():
     """Buy shares of stock"""
 
     if request.method == 'POST':
-        # TODO:
+        # TODO
         flash("TODO")
         return render_template("buy.html")
+
     else:
         return render_template("buy.html")
 
@@ -82,33 +82,31 @@ def buy():
     # Update transactions table
     # Update User's cash
 
-    # return apology("TODO")
 
-
-# Shows the history of transactions
 @app.route("/history")
 @login_required
 def history():
     """Show history of transactions"""
 
+    # TODO: Query the database
     rows = [
         {'ID': 5, 'Symbol': 'AAPL', 'Shares': 5, 'Price': 50, 'Time': 1597530727.044325},
         {'ID': 652, 'Symbol': 'AAPL', 'Shares': -4, 'Price': 51, 'Time': 1597501907.1454823}
     ]
 
+    # Format time
     for row in rows:
         row['Time'] = format_time(row["Time"])
 
+    # Return the table
     return render_template(
         'history_table.html',
-        # header = ['ID', 'Symbol', 'Shares', 'Amount', 'Time'],
         header = ['ID', 'Symbol', 'Shares', 'Price', 'Time'],
         rows = rows,
         title = 'History'
     )
 
 
-# Let's the user sign in
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """Log user in"""
@@ -118,7 +116,6 @@ def login():
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
-        print("-"*50)
 
         # Ensure username was submitted
         if not request.form.get("username"):
@@ -158,7 +155,6 @@ def login():
         return render_template("login.html")
 
 
-# Let's the user log out
 @app.route("/logout")
 def logout():
     """Log user out"""
@@ -170,7 +166,6 @@ def logout():
     return redirect("/")
 
 
-# Give stock quote
 @app.route("/quote", methods=["GET", "POST"])
 @login_required
 def quote():
@@ -181,21 +176,20 @@ def quote():
         return render_template('quote.html')
 
     else:
-        # Look up the price
+        # TODO: Look up the price
         pass
 
     return apology("TODO")
 
 
-# Register a new user
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    """Register a new user"""
+
     if request.method == 'GET':
         return render_template('register.html')
 
     else:
-        print("|"*50)
-
         # Ensure username exists
         if not request.form.get('username'):
             return apology('Username can\'t be empty', 902)
@@ -230,14 +224,9 @@ def register():
                 )
             )
 
-        print(result)
-
         return redirect("/")
 
-    # return apology("TODO")
 
-
-# Sell stocks
 @app.route("/sell", methods=["GET", "POST"])
 @login_required
 def sell():
