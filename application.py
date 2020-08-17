@@ -69,7 +69,61 @@ def buy():
 
     if request.method == 'POST':
         # TODO
-        flash("TODO")
+
+        # print(session, request.form.get('symbol'), request.form.get('count'))
+
+        # Lookup the symbol
+        quote = lookup(request.form.get('symbol'))
+
+        # Ensure Proper result came back
+        if quote == None:
+            flash("Make sure the sumbol is valid and try again later")
+            return render_template('buy.html')
+
+        # Connect to the database
+        with sqlite3.connect('finance.db') as conn:
+            conn.row_factory = sqlite3.Row
+
+            # TODO: take cash from session
+
+            result = conn.execute(
+                'SELECT cash FROM users WHERE id=:id',
+                {'id': session['user_id']}
+            ).fetchall()
+
+            cash = result[0]['cash']
+            total_price = int(request.form.get('count')) * quote['price']
+
+            # Ensure the user can afford
+            if cash < total_price:
+                print(f"That costs {usd(total_price)}")
+                flash(f"That costs {usd(total_price)}")
+                return render_template('buy.html')
+
+            # Make the transaction
+            conn.execute(
+                'INSERT INTO transactions (user_id, symbol, count, price) VALUES (?, ?, ?, ?)',
+                (
+                    session['user_id'],
+                    request.form.get('symbol'),
+                    request.form.get('count'),
+                    quote['price']
+                )
+            )
+
+            # Modify cash
+            conn.execute(
+                'UPDATE users SET cash=? WHERE id=?',
+                (
+                    cash - total_price,
+                    session['user_id']
+                )
+            )
+        
+        flash("Bought %s of %s for %s" % (
+            request.form.get('count'), request.form.get('symbol'), usd(total_price)
+        ))
+
         return render_template("buy.html")
 
     else:
@@ -175,8 +229,7 @@ def quote():
         qoute = lookup(request.form.get('symbol'))
 
         if qoute == None:
-            flash("Make sure the sumbol is valid and try later")
-            flash("Make sure the sumbol is valid and try later")
+            flash("Make sure the sumbol is valid and try again later")
         else:
             flash(
                 '%s: %s' % (qoute['symbol'], usd(qoute['price']))
