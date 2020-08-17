@@ -69,9 +69,6 @@ def buy():
     """Buy shares of stock"""
 
     if request.method == 'POST':
-        # TODO
-
-        # print(session, request.form.get('symbol'), request.form.get('count'))
 
         # Lookup the symbol
         quote = lookup(request.form.get('symbol'))
@@ -113,7 +110,7 @@ def buy():
                 )
             )
 
-            # Modify cash
+            # Update cash
             conn.execute(
                 'UPDATE users SET cash=? WHERE id=?',
                 (
@@ -121,7 +118,8 @@ def buy():
                     session['user_id']
                 )
             )
-        
+
+        # Let the user know it is done
         flash("Bought %s of %s for %s" % (
             request.form.get('count'), request.form.get('symbol'), usd(total_price)
         ))
@@ -130,13 +128,6 @@ def buy():
 
     else:
         return render_template("buy.html")
-
-    # Get the stock's price
-    # Check if the user can afford it
-
-    # Update stocks table
-    # Update transactions table
-    # Update User's cash
 
 
 @app.route("/history")
@@ -309,16 +300,6 @@ def sell():
 
     else:
         return render_template('sell.html')
-
-    # Query database for owned stocks of that symbol
-
-    # Ensure the user don't own less than what he's selling
-
-    # Update stocks table
-    # Update transactions table
-    # Update user's cash
-
-    return apology("TODO")
 
 
 def errorhandler(e):
