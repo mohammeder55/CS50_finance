@@ -1,6 +1,7 @@
 import os
 
 import sqlite3
+from time import time
 
 from flask import Flask, flash, jsonify, redirect, render_template, request, session
 from flask_session import Session
@@ -102,12 +103,13 @@ def buy():
 
             # Make the transaction
             conn.execute(
-                'INSERT INTO transactions (user_id, symbol, count, price) VALUES (?, ?, ?, ?)',
+                'INSERT INTO transactions (user_id, symbol, count, price, time) VALUES (?, ?, ?, ?, ?)',
                 (
                     session['user_id'],
                     request.form.get('symbol'),
                     request.form.get('count'),
-                    quote['price']
+                    quote['price'],
+                    time()
                 )
             )
 
