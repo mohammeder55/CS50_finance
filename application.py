@@ -144,22 +144,35 @@ def buy():
 def history():
     """Show history of transactions"""
 
-    # TODO: Query the database
-    rows = [
-        {'ID': 5, 'Symbol': 'AAPL', 'Shares': 5, 'Price': 50, 'Time': 1597530727.044325},
-        {'ID': 652, 'Symbol': 'AAPL', 'Shares': -4, 'Price': 51, 'Time': 1597501907.1454823}
-    ]
+    # Connect to the database
+    with sqlite3.connect('finance.db') as conn:
+        conn.row_factory = sqlite3.Row
 
-    # Format time
+        # Query the database
+        result = conn.execute(
+            'SELECT id, symbol, count, price, time FROM transactions WHERE user_id=:id',
+            {'id': session['user_id']}
+        )
+
+    # Get the result as a list of dictionaries
+    # As Row class does not support assignment
+    rows = [dict(row) for row in result]
+
+    # Iterate over rows
     for row in rows:
-        row['Time'] = format_time(row["Time"])
+        # Format time
+        row['time'] = format_time(row["time"])
 
-    # Return the table
+        # Calculate total price
+        row['total price'] = usd(
+            row['count'] * row['price']
+        )
+
+    # Render the table
     return render_template(
         'history_table.html',
-        header = ['ID', 'Symbol', 'Shares', 'Price', 'Time'],
+        header = ['id', 'symbol', 'count', 'total price', 'time'],
         rows = rows,
-        title = 'History'
     )
 
 

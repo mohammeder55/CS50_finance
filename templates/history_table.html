@@ -1,8 +1,6 @@
 {% extends 'layout.html' %}
 
-{% block title %}
-    {{ title }}
-{% endblock %}
+{% block title %} History {% endblock %}
 
 {% block main %}
     <table class="table table-bordered">
@@ -19,8 +17,9 @@
             {% for row in rows %}
             <tr>
                 {% for head in header %}
-                    {% if head == 'Price' or head == 'Shares' %}
-                        {% if row['Shares'] > 0 %}
+
+                    {% if head == 'total price' or head == 'count' %}
+                        {% if row['price'] > 0 %}
                             <td class="green-text">
                         {% else %}
                             <td class="red-text">
@@ -29,13 +28,9 @@
                         <td>
                     {% endif %}
 
-                        {% if head == 'Price' %}
-                            {{ row['Shares'] * row['Price']}}
-                        {% else %}
-                            {{ row[head] }}
-                        {% endif %}
-
+                        {{ row[head] }}
                     </td>
+
                 {% endfor %}
             </tr>
             {% endfor %}
