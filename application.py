@@ -295,11 +295,72 @@ def sell():
     """Sell shares of stock"""
 
     if request.method == 'POST':
-        flash("%s, %s" % (request.form.get('symbol'), request.form.get('count')))
-        return render_template('sell.html')
 
-    else:
-        return render_template('sell.html')
+        # Lookup the symbol
+        quote = lookup(request.form.get('symbol'))
+
+        # Ensure Proper result came back
+        if quote == None:
+            flash("Make sure the sumbol is valid and try again later")
+            return render_template('buy.html')
+
+        # Connect to the database
+        with sqlite3.connect('finance.db') as conn:
+            conn.row_factory = sqlite3.Row
+
+            # Get shares count
+            result = conn.execute(
+                'SELECT SUM(count) as sum FROM transactions WHERE id=? AND SYMBOL=?',
+                (
+                    session['user_id'],
+                    request.form.get('symbol')
+                )
+            ).fetchall()
+            owned = y if (y := result[0]['sum']) != None else 0
+
+            # Ensure user has enough shares
+            if int(request.form.get('count')) > owned:
+                flash(f"You do not own {request.form.get('count')} shares")
+                return render_template('sell.html')
+
+            # Make the transaction
+            conn.execute(
+                'INSERT INTO transactions (user_id, symbol, count, price, time) VALUES (?, ?, ?, ?, ?)',
+                (
+                    session['user_id'],
+                    request.form.get('symbol'),
+                    -int(request.form.get('count')),
+                    quote['price'],
+                    time()
+                )
+            )
+
+            # TODO: take cash from session
+
+            result = conn.execute(
+                'SELECT cash FROM users WHERE id=:id',
+                {'id': session['user_id']}
+            ).fetchall()
+
+            cash = result[0]['cash']
+
+            total_price = int(request.form.get('count')) * quote['price']
+
+            # Update cash
+            conn.execute(
+                'UPDATE transactions SET cash = ? WHERE id = ?',
+                (
+                    cash + total_price,
+                    session['user_id']
+                )
+            )
+
+        # Let the user know it is done
+        flash("Sold %s of %s for %s" % (
+            request.form.get('count'), request.form.get('symbol'), usd(total_price)
+        ))
+
+    return render_template('sell.html')
 
 
 def errorhandler(e):
