@@ -11,6 +11,10 @@
         <div class="form-group">
             <input autofocus type="number" class="form-control" placeholder="Shares Count" name="count">
         </div>
-        <button class="btn btn-primary" type="submit"> Buy </button>
+        <button class="btn btn-primary" type="submit" id="submit" disabled> Buy </button>
     </form>
+{% endblock %}
+
+{% block script %}
+    <script src="/static/shareCountForm.js"></script>
 {% endblock %}

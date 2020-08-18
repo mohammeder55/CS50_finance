@@ -12,6 +12,27 @@
         <div class="form-group">
             <input class="form-control" name="password" placeholder="Password" type="password">
         </div>
-        <button class="btn btn-primary" type="submit">Log In</button>
+        <button class="btn btn-primary" type="submit" id="submit" disabled>Log In</button>
     </form>
 {% endblock %}
+
+{% block script %}
+    <script>
+        const inputs = document.getElementsByTagName('input'),
+            btn = document.getElementById('submit');
+
+        document.addEventListener('keyup', (e) => {
+            // Iterate over the input
+            for (input of inputs) {
+                // If the input is Empty
+                if (input.value == '') {
+                    btn.disabled = true
+                    return;
+                }
+            }
+            btn.disabled = false
+        });
+    </script>
+{% endblock %}
+
+

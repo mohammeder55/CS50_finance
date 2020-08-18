@@ -11,7 +11,23 @@
             <input type="text" name="symbol" class="form-control" placeholder="Symbol">
         </div>
 
-        <button type="submit" class="btn btn-primary"> Quote </button>
+        <button type="submit" class="btn btn-primary" id="submit" disabled> Quote </button>
     </form>
 
+{% endblock %}
+
+{% block script %}
+    <script>
+        const input = document.getElementsByTagName('input')[0],
+            btn = document.getElementById('submit');
+
+        document.addEventListener('keyup', (e) => {
+            // If the input is Empty
+            if (input.value == '') {
+                btn.disabled = true
+                return;
+            }
+            btn.disabled = false
+        });
+    </script>
 {% endblock %}

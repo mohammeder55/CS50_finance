@@ -10,7 +10,10 @@
         <div class="form-group">
             <input class="form-control" placeholder="Shares count" name="count" type="number">
         </div>
-        <button class="btn btn-primary" type="submit"> Sell </button>
+        <button class="btn btn-primary" type="submit" id="submit" disabled> Sell </button>
     </form>
+{% endblock %}
 
+{% block script %}
+    <script src="/static/shareCountForm.js"></script>
 {% endblock %}
