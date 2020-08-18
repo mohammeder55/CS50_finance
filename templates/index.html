@@ -5,12 +5,12 @@
 {% endblock %}
 
 {% block main %}
-    <table class="table table-bordered">
+    <table class="table table-striped">
 
         <thead>
             <tr>
                 {% for head in header %}
-                    <th> {{ head }} </th>
+                    <th> {{ head.capitalize() }} </th>
                 {% endfor %}
             </tr>
         </thead>

@@ -49,16 +49,62 @@ def index():
     with sqlite3.connect('finance.db') as conn:
         conn.row_factory = sqlite3.Row
 
-        # TODO: Change the statement
+        # Query cash
         result = conn.execute(
-            "SELECT id, cash FROM users"
+            'SELECT cash FROM users WHERE id=:id',
+            {'id': session['user_id']}
+        ).fetchall()
+        # Store in session
+        session['cash'] = result[0]['cash']
+
+        # Query stock count
+        result = conn.execute(
+            "SELECT symbol, SUM(count) as count FROM transactions WHERE user_id=:id GROUP BY symbol",
+            {'id': session['user_id']}
         )
+
+    # Get the result as a list of dictionaries
+    # As Row class does not support assignment
+    rows = [dict(row) for row in result]
+    # Initialize net owned
+    net = session['cash']
+
+    for row in rows:
+        # Look up the symbol
+        quote = lookup(row['symbol'])
+        # Ensure did not go wrong
+        if quote == None:
+            flash('Sorry, Unable to get stock prices')
+            return render_template('layout.html')
+
+        # Append price
+        row['price'] = quote['price']
+
+        # Append total price
+        row['total'] = row['count'] * row['price']
+        # .. add it to the net
+        net += row['total']
+
+        # Format prices
+        row['price'] = usd(row['price'])
+        row['total'] = usd(row['total'])
+
+    # Cash row
+    rows.append({
+        'symbol': 'CASH',
+        'total': usd(session['cash'])
+    })
+
+    # Total row
+    rows.append({
+        'total': usd(net)
+    })
 
     # Make the template
     return render_template(
-        'index_table.html',
-        rows = result,
-        header = ['id', 'cash'],
+        'index.html',
+        rows = rows,
+        header = ['symbol', 'price', 'count', 'total'],
         title = 'Home'
     )
 
