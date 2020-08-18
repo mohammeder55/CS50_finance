@@ -159,6 +159,9 @@ def history():
             row['count'] * row['price']
         )
 
+        # format id
+        row['id'] = '#%04i' % (row['id'])
+
     # Render the table
     return render_template(
         'history_table.html',
