@@ -122,27 +122,21 @@ def buy():
         # Ensure Proper result came back
         if quote == None:
             flash("Make sure the sumbol is valid and try again later")
-            return render_template('buy.html')
+            return redirect('/buy')
 
         # Connect to the database
         with sqlite3.connect('finance.db') as conn:
             conn.row_factory = sqlite3.Row
 
-            # TODO: take cash from session
+            cash = session['cash']
 
-            result = conn.execute(
-                'SELECT cash FROM users WHERE id=:id',
-                {'id': session['user_id']}
-            ).fetchall()
-
-            cash = result[0]['cash']
             total_price = int(request.form.get('count')) * quote['price']
 
             # Ensure the user can afford
             if cash < total_price:
                 print(f"That costs {usd(total_price)}")
                 flash(f"That costs {usd(total_price)}")
-                return render_template('buy.html')
+                return redirect('/buy')
 
             # Make the transaction
             conn.execute(
@@ -170,10 +164,13 @@ def buy():
             request.form.get('count'), request.form.get('symbol'), usd(total_price)
         ))
 
-        return render_template("buy.html")
+        return redirect('/')
 
     else:
-        return render_template("buy.html")
+        return render_template(
+            "buy.html",
+            cash = usd(session['cash'])
+        )
 
 
 @app.route("/history")
