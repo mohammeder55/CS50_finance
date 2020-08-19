@@ -10,18 +10,25 @@
                 {% for head in header %}
                     <th> {{ head.capitalize() }} </th>
                 {% endfor %}
+                <th>  </th>
             </tr>
         </thead>
 
         <tbody>
             {% for row in rows %}
-            <tr>
-                {% for head in header %}
-                    <td> {{ row[head] }} </td>
-                {% endfor %}
-            </tr>
+                <tr>
+                    {% for head in header %}
+                        <td> {{ row[head] }} </td>
+                    {% endfor %}
+                    <td>
+                        <button class="btn btn-secondary" data-toggle="collapse" data-target="#sell"> Sell </button>
+                    </td>
+                </tr>
             {% endfor %}
         </tbody>
 
     </table>
+    <div class="fluid-container collapse" id="sell">
+        Some thing just to fill space
+    </div>
 {% endblock %}
