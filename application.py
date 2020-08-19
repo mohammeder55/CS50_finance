@@ -25,9 +25,6 @@ def after_request(response):
     response.headers["Pragma"] = "no-cache"
     return response
 
-# Custom filter
-app.jinja_env.filters["usd"] = usd
-
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = False
@@ -54,7 +51,7 @@ def index():
             'SELECT cash FROM users WHERE id=:id',
             {'id': session['user_id']}
         ).fetchall()
-        # Store in session
+        # Store cash in session
         session['cash'] = result[0]['cash']
 
         # Query stock count
@@ -72,7 +69,7 @@ def index():
     for row in rows:
         # Look up the symbol
         quote = lookup(row['symbol'])
-        # Ensure did not go wrong
+        # Ensure proper result came back
         if quote == None:
             flash('Sorry, Unable to get stock prices')
             return render_template('layout.html')
@@ -104,8 +101,7 @@ def index():
     return render_template(
         'index.html',
         rows = rows,
-        header = ['symbol', 'price', 'count', 'total'],
-        title = 'Home'
+        header = ['symbol', 'price', 'count', 'total']
     )
 
 
@@ -132,9 +128,8 @@ def buy():
 
             total_price = int(request.form.get('count')) * quote['price']
 
-            # Ensure the user can afford
+            # Ensure user can afford it
             if cash < total_price:
-                print(f"That costs {usd(total_price)}")
                 flash(f"That costs {usd(total_price)}")
                 return redirect('/buy')
 
@@ -202,7 +197,7 @@ def history():
             row['count'] * row['price']
         )
 
-        # format id
+        # Format id
         row['id'] = '#%04i' % (row['id'])
 
     # Render the table
@@ -234,24 +229,25 @@ def login():
         # Connect to the database
         with sqlite3.connect('finance.db') as conn:
             conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
 
             # Query database for username
-            rows = cursor.execute(
+            rows = conn.execute(
                 "SELECT * FROM users WHERE username = :username",
                 {'username': request.form.get("username")}
-            )
+            ).fetchall()
 
-            # Get the first row
-            row = rows.fetchone()
+        # Ensure username exists
+        if len(rows) == 0:
+            flash('Username does not exist')
+            return render_template('login.html')
 
+        # Ensure username and password matches
+        if not check_password_hash(rows[0]["hash"], request.form.get("password")):
+            flash('Invalid username and/or password')
+            return render_template('login.html')
 
-        # Ensure username exists and password is correct
-        if row == None or not check_password_hash(row["hash"], request.form.get("password")):
-            return apology("invalid username and/or password", 403)
-
-        # Remember which user has logged in
-        session["user_id"] = row["id"]
+        # Remember user's id
+        session["user_id"] = rows[0]["id"]
 
         # Redirect user to home page
         return redirect("/")
@@ -277,7 +273,9 @@ def logout():
 def quote():
     """Get stock quote."""
 
+    # If reached with POST
     if request.method == 'POST':
+        # Lookup the symbol
         qoute = lookup(request.form.get('symbol'))
 
         if qoute == None:
@@ -300,31 +298,33 @@ def register():
     else:
         # Ensure username exists
         if not request.form.get('username'):
-            return apology('Username can\'t be empty', 902)
+            flash("Username can't be empty")
+            return render_template('register.html')
 
         # Ensure password & confirmation exist
         if not request.form.get('password') or not request.form.get('confirmation'):
-            return apology('a password can\'t be empty', 902)
+            flash("A password can't be empty")
+            return render_template('register.html')
 
         # Ensure password matches confirmation
         if request.form.get('password') != request.form.get('confirmation'):
-            return apology("PASSWORDS MUST MATCH!!", 901)
+            flash("Passwords must match")
+            return render_template('register.html')
 
         # Connect to the database
         with sqlite3.connect('finance.db') as conn:
-            cursor = conn.cursor()
-
             # Check if the username is already in the database
-            result = cursor.execute(
+            rows = conn.execute(
                 "SELECT id FROM users WHERE username=?",
                 (request.form.get('username'),)
-            )
+            ).fetchall()
             # .. if it does
-            if result.fetchone() != None:
-                return apology("username already used", 903)
+            if len(rows) != 0:
+                flash("Username already used")
+                return render_template('register.html')
 
             # Insert the user
-            result = cursor.execute(
+            conn.execute(
                 "INSERT INTO users (username, hash) VALUES (?, ?)",
                 (
                     request.form.get('username'),
@@ -332,7 +332,7 @@ def register():
                 )
             )
 
-        return redirect("/")
+        return redirect("/login")
 
 
 @app.route("/sell", methods=["GET", "POST"])
@@ -355,14 +355,14 @@ def sell():
             conn.row_factory = sqlite3.Row
 
             # Get shares count
-            result = conn.execute(
-                'SELECT SUM(count) as sum FROM transactions WHERE id=? AND SYMBOL=?',
+            rows = conn.execute(
+                'SELECT SUM(count) as sum FROM transactions WHERE user_id=? AND SYMBOL=?',
                 (
                     session['user_id'],
                     request.form.get('symbol')
                 )
             ).fetchall()
-            owned = y if (y := result[0]['sum']) != None else 0
+            owned = y if (y := rows[0]['sum']) != None else 0
 
             # Ensure user has enough shares
             if int(request.form.get('count')) > owned:
@@ -381,22 +381,13 @@ def sell():
                 )
             )
 
-            # TODO: take cash from session
-
-            result = conn.execute(
-                'SELECT cash FROM users WHERE id=:id',
-                {'id': session['user_id']}
-            ).fetchall()
-
-            cash = result[0]['cash']
-
             total_price = int(request.form.get('count')) * quote['price']
 
             # Update cash
             conn.execute(
-                'UPDATE transactions SET cash = ? WHERE id = ?',
+                'UPDATE users SET cash = ? WHERE id = ?',
                 (
-                    cash + total_price,
+                    session['cash'] + total_price,
                     session['user_id']
                 )
             )
