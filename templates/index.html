@@ -28,7 +28,15 @@
         </tbody>
 
     </table>
-    <div class="fluid-container collapse" id="sell">
-        Some thing just to fill space
-    </div>
+
+    <div class="collapse card" id="sell" style="width: 40vw;">
+        <form class="card-body" action="/sell" method="post">
+            <div class="form-group">
+                <input class="form-control" placeholder="Symbol" name="symbol" type="text">
+            </div>
+            <div class="form-group">
+                <input class="form-control" placeholder="SHares count" name="count" type="number">
+            </div>
+            <button class="btn btn-primary" type="submit" id="submit"> Sell </button>
+        </form>
 {% endblock %}
