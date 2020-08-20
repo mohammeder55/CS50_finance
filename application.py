@@ -9,7 +9,7 @@ from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import apology, login_required, lookup, usd, format_time
+from helpers import login_required, lookup, usd, format_time
 
 # Configure application
 app = Flask(__name__)
@@ -67,15 +67,34 @@ def index():
     net = session['cash']
 
     for row in rows:
-        # Look up the symbol
-        quote = lookup(row['symbol'])
-        # Ensure proper result came back
-        if quote == None:
-            flash('Sorry, Unable to get stock prices')
-            return render_template('layout.html')
 
-        # Append price
-        row['price'] = quote['price']
+        # If first time
+        if session['first_time']:
+            # Initialize entry for session
+            entry = {}
+
+            # Look up the symbol
+            quote = lookup(row['symbol'])
+            # Ensure proper result came back
+            if quote == None:
+                flash('Sorry, Unable to get stock prices')
+                return render_template('layout.html')
+
+            # Append price
+            row['price'] \
+                = entry['price'] \
+                = quote['price']
+
+            # Store count in session's entry
+            entry['count'] = row['count']
+
+            # Store session's enty in session
+            session[row['symbol']] = entry
+
+        # If not first time
+        else:
+            row['price'] = session[row['symbol']]['price']
+
 
         # Append total price
         row['total'] = row['count'] * row['price']
@@ -96,6 +115,10 @@ def index():
     rows.append({
         'total': usd(net)
     })
+
+    # Negate first time
+    if session['first_time']:
+        session['first_time'] = False
 
     # Make the template
     return render_template(
@@ -248,6 +271,8 @@ def login():
 
         # Remember user's id
         session["user_id"] = rows[0]["id"]
+        # Set to first time
+        session['first_time'] = True
 
         # Redirect user to home page
         return redirect("/")
