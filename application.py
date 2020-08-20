@@ -397,7 +397,7 @@ def sell():
             request.form.get('count'), request.form.get('symbol'), usd(total_price)
         ))
 
-    return render_template('sell.html')
+    return redirect('/')
 
 
 def errorhandler(e):
