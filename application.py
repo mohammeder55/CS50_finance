@@ -341,6 +341,10 @@ def sell():
     """Sell shares of stock"""
 
     if request.method == 'POST':
+        # Ensure a symbol was provided
+        if not request.form.get('symbol'):
+            flash('Sorry, something went wrong consider using sell page')
+            redirect('/')
 
         # Lookup the symbol
         quote = lookup(request.form.get('symbol'))
@@ -367,7 +371,7 @@ def sell():
             # Ensure user has enough shares
             if int(request.form.get('count')) > owned:
                 flash(f"You do not own {request.form.get('count')} shares")
-                return render_template('sell.html')
+                return redirect('/')
 
             # Make the transaction
             conn.execute(
@@ -397,7 +401,7 @@ def sell():
             request.form.get('count'), request.form.get('symbol'), usd(total_price)
         ))
 
-    return render_template('sell.html')
+    return redirect('/')
 
 
 def errorhandler(e):

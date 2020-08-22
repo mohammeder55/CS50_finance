@@ -10,18 +10,82 @@
                 {% for head in header %}
                     <th> {{ head.capitalize() }} </th>
                 {% endfor %}
+                <th>  </th>
             </tr>
         </thead>
 
         <tbody>
             {% for row in rows %}
-            <tr>
-                {% for head in header %}
-                    <td> {{ row[head] }} </td>
-                {% endfor %}
-            </tr>
+                <tr>
+                    {% for head in header %}
+                        <td> {{ row[head] }} </td>
+                    {% endfor %}
+                    <td>
+                        <button class="btn btn-secondary" type="button" onclick="modal('{{row['symbol']}}')"> Sell </button>
+                    </td>
+                </tr>
             {% endfor %}
         </tbody>
 
     </table>
+
+    <div class="modal" id="sell">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h3> Sell Something </h3>
+                </div>
+
+                <div class="modal-body">
+                    <form class="card-body" action="/sell" method="post">
+                        <div class="form-group">
+                            <input class="form-control" style="display: none;"  placeholder="Symbol" name="symbol" type="text">
+                        </div>
+                        <div class="form-group">
+                            <input class="form-control" placeholder="Shares count" name="count" type="number">
+                        </div>
+                        <button class="btn btn-primary" type="submit" id="submit" disabled> Sell </button>
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-danger" data-dismiss="modal"> Close </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        // Take modal header & form inputs
+        const header      = document.getElementsByClassName('modal-header')[0],
+              inputs      = document.getElementsByTagName('input'),
+              submit      = document.getElementById('submit');
+
+        // Controls submit button
+        document.addEventListener('keyup', () => {
+            let count = parseFloat(inputs[1].value);
+            if (count == '' || count < 1 || !Number.isInteger(count)) {
+                submit.disabled = true
+                return;
+            }
+            submit.disabled = false
+        });
+
+
+        modal = (symbol) => {
+            // Set the header
+            header.innerHTML = 'Sell ' + symbol
+
+            // Set the symbol input
+            inputs[0].value = symbol
+
+            // Activate the modal
+            $("#sell").modal()
+        }
+    </script>
 {% endblock %}

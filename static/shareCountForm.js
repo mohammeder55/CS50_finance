@@ -11,7 +11,7 @@ for (input of inputs) {
     }
 }
 let count = parseFloat(inputs[1].value)
-// Ensure shares coutn is an integer greater than 0
+// Ensure shares count is an integer greater than 0
 if (count < 1 || !Number.isInteger(count)) {
     btn.disabled = true
     return;
