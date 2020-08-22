@@ -67,6 +67,11 @@ def index():
     net = session['cash']
 
     for row in rows:
+        # Remove rows that have a 0 count
+        if row['count'] == 0:
+            rows.remove(row)
+            continue
+
         # Look up the symbol
         quote = lookup(row['symbol'])
         # Ensure proper result came back
@@ -212,8 +217,8 @@ def history():
 def login():
     """Log user in"""
 
-    # Forget any user_id
-    session.clear()
+    if 'user_id' in session:
+        return redirect('/')
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
