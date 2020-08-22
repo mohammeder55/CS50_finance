@@ -67,7 +67,6 @@ def index():
     net = session['cash']
 
     for row in rows:
-
         # Look up the symbol
         quote = lookup(row['symbol'])
         # Ensure proper result came back
@@ -97,10 +96,6 @@ def index():
     rows.append({
         'total': usd(net)
     })
-
-    # Negate first time
-    if session['first_time']:
-        session['first_time'] = False
 
     # Make the template
     return render_template(
@@ -253,8 +248,6 @@ def login():
 
         # Remember user's id
         session["user_id"] = rows[0]["id"]
-        # Set to first time
-        session['first_time'] = True
 
         # Redirect user to home page
         return redirect("/")
