@@ -2,6 +2,8 @@ import os
 import requests
 import urllib.parse
 
+import sqlite3
+
 from flask import redirect, render_template, request, session
 from functools import wraps
 
@@ -39,24 +41,65 @@ def login_required(f):
 def lookup(symbol):
     """Look up quote for symbol."""
 
-    # Contact API
-    try:
-        api_key = os.environ.get("API_KEY")
-        response = requests.get(f"https://cloud-sse.iexapis.com/stable/stock/{urllib.parse.quote_plus(symbol)}/quote?token={api_key}")
-        response.raise_for_status()
-    except requests.RequestException:
-        return None
+    # Connect to database
+    with sqlite3.connect('prices.db') as conn:
+        conn.row_factory = sqlite3.Row
 
-    # Parse response
-    try:
-        quote = response.json()
-        return {
-            "name": quote["companyName"],
-            "price": float(quote["latestPrice"]),
-            "symbol": quote["symbol"]
-        }
-    except (KeyError, TypeError, ValueError):
-        return None
+        # Query price
+        rows = conn.execute(
+            'SELECT price, time FROM prices WHERE symbol=:symbol',
+            {'symbol': symbol}
+        ).fetchall()
+
+        # If result exists and belongs to less than a day prior
+        if (exists := len(rows) == 1) and time.time() - rows[0]['time'] < 86400:
+            print(time.time() - rows[0]['time'])
+            return {
+                'price': rows[0]['price'],
+                'symbol': symbol
+            }
+
+        # Contact API
+        try:
+            api_key = os.environ.get("API_KEY")
+            response = requests.get(f"https://cloud-sse.iexapis.com/stable/stock/{urllib.parse.quote_plus(symbol)}/quote?token={api_key}")
+            response.raise_for_status()
+        except requests.RequestException:
+            return None
+
+        # Parse response
+        try:
+            quote = response.json()
+
+            price = float(quote["latestPrice"])
+
+            # Update/insert into db
+            if exists:
+                conn.execute(
+                    'UPDATE prices SET price=?, time=? WHERE symbol=?',
+                    (
+                        price,
+                        time.time(),
+                        symbol
+                    )
+                )
+            else:
+                conn.execute(
+                    'INSERT INTO prices VALUES (?, ?, ?)',
+                    (
+                        symbol,
+                        price,
+                        time.time()
+                    )
+                )
+
+            return {
+                "name": quote["companyName"],
+                "price": price,
+                "symbol": quote["symbol"]
+            }
+        except (KeyError, TypeError, ValueError):
+            return None
 
 
 def usd(value):

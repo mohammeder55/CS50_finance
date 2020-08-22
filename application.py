@@ -68,33 +68,15 @@ def index():
 
     for row in rows:
 
-        # If first time
-        if session['first_time']:
-            # Initialize entry for session
-            entry = {}
+        # Look up the symbol
+        quote = lookup(row['symbol'])
+        # Ensure proper result came back
+        if quote == None:
+            flash('Sorry, Unable to get stock prices')
+            return render_template('layout.html')
 
-            # Look up the symbol
-            quote = lookup(row['symbol'])
-            # Ensure proper result came back
-            if quote == None:
-                flash('Sorry, Unable to get stock prices')
-                return render_template('layout.html')
-
-            # Append price
-            row['price'] \
-                = entry['price'] \
-                = quote['price']
-
-            # Store count in session's entry
-            entry['count'] = row['count']
-
-            # Store session's enty in session
-            session[row['symbol']] = entry
-
-        # If not first time
-        else:
-            row['price'] = session[row['symbol']]['price']
-
+        # Append price
+        row['price'] = quote['price']
 
         # Append total price
         row['total'] = row['count'] * row['price']
