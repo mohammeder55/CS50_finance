@@ -21,7 +21,9 @@
                         <td> {{ row[head] }} </td>
                     {% endfor %}
                     <td>
-                        <button class="btn btn-secondary" type="button" onclick="modal('{{row['symbol']}}')"> Sell </button>
+                        {% if 'price' in row %}
+                            <button class="btn btn-secondary" type="button" onclick="modal('{{ row['symbol'] }}', {{ row['count'] }})"> Sell </button>
+                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}
@@ -62,27 +64,33 @@
 {% block script %}
     <script>
         // Take modal header & form inputs
-        const header      = document.getElementsByClassName('modal-header')[0],
-              inputs      = document.getElementsByTagName('input'),
-              submit      = document.getElementById('submit');
+        const header = document.getElementsByClassName('modal-header')[0],
+              inputs = document.getElementsByTagName('input'),
+              submit = document.getElementById('submit');
 
-        // Controls submit button
+        // Submit button activation
         document.addEventListener('keyup', () => {
+            // Pares input
             let count = parseFloat(inputs[1].value);
-            if (count == '' || count < 1 || !Number.isInteger(count)) {
+
+            // Ensure count exist and is an integer within range
+            if (count != '' && Number.isInteger(count) && 0 < count && count <= maxCount) {
+                submit.disabled = false
+            } else {
                 submit.disabled = true
-                return;
             }
-            submit.disabled = false
         });
 
 
-        modal = (symbol) => {
+        modal = (symbol, count) => {
             // Set the header
             header.innerHTML = 'Sell ' + symbol
 
             // Set the symbol input
             inputs[0].value = symbol
+
+            // Take max count
+            maxCount = count
 
             // Activate the modal
             $("#sell").modal()
